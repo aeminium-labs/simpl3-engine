@@ -25,7 +25,7 @@ COPY --link package-lock.json package.json ./
 RUN npm ci
 
 # Copy application code
-COPY --link . .
+COPY --link ./build .
 
 
 # Final stage for app image
@@ -36,4 +36,4 @@ COPY --from=build /app /app
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "node", "index.js" ]
+CMD [ "node", "node.mjs" ]
