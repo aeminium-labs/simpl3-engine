@@ -25,7 +25,7 @@ COPY --link package-lock.json package.json ./
 RUN npm ci
 
 # Copy application code
-COPY --link . .
+COPY --link ./build .
 
 
 # Final stage for app image
