@@ -7,7 +7,7 @@ import { Keypair, Transaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import { createDBConnection } from "@/utils/db";
 import { createActor, toPromise } from "xstate";
-import { RegisterAccount, registerAccountMachine } from "@/machines/registerAccount";
+import { RegisterAccount, registerAccountMachine } from "@/machines/registerAccount.machine";
 import { Credentials, decryptData, generateKey } from "@/utils/crypto";
 
 const RegistrationResponseType = objectType<RegisterAccount>({
@@ -75,7 +75,6 @@ addMutationFields((t) => ({
                             verifySignatures: false,
                         });
 
-                        console.log(serializedTransaction);
 
                         const transactionBase64 =
                             serializedTransaction.toString("base64");

@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@simplewebauthn/server": "^9.0.3",
+    "@simplewebauthn/types": "^9.0.1",
     "@solana/web3.js": "^1.91.0",
     "bs58": "^5.0.0",
     "fuse": "^0.12.1",

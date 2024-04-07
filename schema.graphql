@@ -14,8 +14,12 @@ type Login {
 
 type Mutation {
   _version: String!
+  finishAuthentication(appId: String, id: String!, response: String!): Boolean
+  finishRegistration(appId: String, id: String!, response: String!): Boolean
   registerAccount(appId: String, id: String!, pin: Int!): RegistrationResponse
   sign(id: String!, pin: Int!, tx: String!): String
+  startAuthentication(appId: String, id: String!): String
+  startRegistration(appId: String, id: String!): String
 }
 
 type Query {
