@@ -1,3 +1,8 @@
+type CheckAccount {
+  isRegistered: Boolean
+  isRegisteredInApp: Boolean
+}
+
 """
 A date string, such as 2007-12-03, compliant with the `full-date` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
 """
@@ -16,7 +21,7 @@ type Mutation {
   _version: String!
   finishAuthentication(appId: String, id: String!, response: String!): Boolean
   finishRegistration(appId: String, id: String!, response: String!): Boolean
-  registerAccount(appId: String, id: String!, pin: Int!): RegistrationResponse
+  registerAccount(appId: String, id: String!, pin: String!): RegistrationResponse
   sign(id: String!, pin: Int!, tx: String!): String
   startAuthentication(appId: String, id: String!): String
   startRegistration(appId: String, id: String!): String
@@ -24,7 +29,8 @@ type Mutation {
 
 type Query {
   _version: String!
-  loginAccount(appId: String, id: String!, pin: Int!): Login
+  checkAccount(appId: String, id: String!): CheckAccount
+  loginAccount(appId: String, id: String!, pin: String!): Login
 }
 
 type RegistrationResponse {

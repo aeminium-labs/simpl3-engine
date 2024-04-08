@@ -13,9 +13,9 @@ export const registerAccountMachine = setup({
             isRegistered?: boolean;
             isRegisteredInApp?: boolean;
             error?: string;
-            pin?: number;
+            pin?: string;
         },
-        events: {} as { type: "register"; id: string; appId?: string | null; pin: number },
+        events: {} as { type: "register"; id: string; appId?: string | null; pin: string },
         output: {} as RegisterAccount
     },
     actions: {
@@ -44,7 +44,7 @@ export const registerAccountMachine = setup({
                 isRegistered: isRegistered !== null,
             }
         }),
-        registerAccount: fromPromise(async ({ input }: { input: { id?: string; pin?: number } }) => {
+        registerAccount: fromPromise(async ({ input }: { input: { id?: string; pin?: string } }) => {
             if (!input.id) {
                 throw new Error("ID not set");
             }
@@ -65,7 +65,7 @@ export const registerAccountMachine = setup({
 
             return new Error("Registration failed")
         }),
-        registerAppAccount: fromPromise(async ({ input }: { input: { id?: string; pin?: number; appId?: string | null } }) => {
+        registerAppAccount: fromPromise(async ({ input }: { input: { id?: string; pin?: string; appId?: string | null } }) => {
             if (!input.id) {
                 throw new Error("ID not set");
             }

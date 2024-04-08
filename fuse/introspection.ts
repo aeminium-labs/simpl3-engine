@@ -33,6 +33,35 @@ const introspection = {
     "subscriptionType": null,
     "types": [
       {
+        "kind": "OBJECT",
+        "name": "CheckAccount",
+        "fields": [
+          {
+            "name": "isRegistered",
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "args": []
+          },
+          {
+            "name": "isRegisteredInApp",
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "args": []
+          }
+        ],
+        "interfaces": []
+      },
+      {
+        "kind": "SCALAR",
+        "name": "Boolean"
+      },
+      {
         "kind": "SCALAR",
         "name": "Date"
       },
@@ -189,7 +218,7 @@ const introspection = {
                   "kind": "NON_NULL",
                   "ofType": {
                     "kind": "SCALAR",
-                    "name": "Int",
+                    "name": "String",
                     "ofType": null
                   }
                 }
@@ -302,10 +331,6 @@ const introspection = {
       },
       {
         "kind": "SCALAR",
-        "name": "Boolean"
-      },
-      {
-        "kind": "SCALAR",
         "name": "Int"
       },
       {
@@ -323,6 +348,35 @@ const introspection = {
               }
             },
             "args": []
+          },
+          {
+            "name": "checkAccount",
+            "type": {
+              "kind": "OBJECT",
+              "name": "CheckAccount",
+              "ofType": null
+            },
+            "args": [
+              {
+                "name": "appId",
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              },
+              {
+                "name": "id",
+                "type": {
+                  "kind": "NON_NULL",
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "String",
+                    "ofType": null
+                  }
+                }
+              }
+            ]
           },
           {
             "name": "loginAccount",
@@ -357,7 +411,7 @@ const introspection = {
                   "kind": "NON_NULL",
                   "ofType": {
                     "kind": "SCALAR",
-                    "name": "Int",
+                    "name": "String",
                     "ofType": null
                   }
                 }
