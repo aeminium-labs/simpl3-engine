@@ -309,7 +309,7 @@ addMutationFields((t) => ({
     type: RegistrationResponseType,
     args: {
       id: t.arg.string({ required: true }),
-      pin: t.arg.int({ required: true }),
+      pin: t.arg.string({ required: true }),
       appId: t.arg.string({ required: false })
     },
     resolve: async (_, args) => {
@@ -369,12 +369,37 @@ const LoginType = objectType({
     pubKey: t.exposeString("pubKey")
   })
 });
+const CheckAccountType = objectType({
+  name: "CheckAccount",
+  fields: (t) => ({
+    isRegisteredInApp: t.exposeBoolean("isRegisteredInApp"),
+    isRegistered: t.exposeBoolean("isRegistered")
+  })
+});
 addQueryFields((t) => ({
+  checkAccount: t.field({
+    type: CheckAccountType,
+    args: {
+      id: t.arg.string({ required: true }),
+      appId: t.arg.string({ required: false })
+    },
+    resolve: async (_, args) => {
+      const { db } = await createDBConnection({ mongoURI: process.env.DB_URI || "", dbName: process.env.DB_NAME || "" });
+      const appKey = generateKey([args.id, args.appId].join("%"));
+      const isRegisteredInApp = await db.collection("auth").findOne({ id: appKey });
+      const mainKey = generateKey(args.id);
+      const isRegistered = await db.collection("auth").findOne({ id: mainKey });
+      return {
+        isRegisteredInApp: isRegisteredInApp !== null,
+        isRegistered: isRegistered !== null
+      };
+    }
+  }),
   loginAccount: t.field({
     type: LoginType,
     args: {
       id: t.arg.string({ required: true }),
-      pin: t.arg.int({ required: true }),
+      pin: t.arg.string({ required: true }),
       appId: t.arg.string({ required: false })
     },
     resolve: async (_, args) => {
