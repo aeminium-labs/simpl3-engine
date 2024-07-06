@@ -1,8 +1,6 @@
 import { assign, fromPromise, setup } from "xstate";
-import { createDBConnection } from "@/utils/db";
-import { generateAccount, generateKey } from "@/utils/crypto";
+import { checkCircleAccount, generateCircleAccount, generateKey } from "@/utils/crypto";
 
-const { db } = await createDBConnection({ mongoURI: process.env.DB_URI || "", dbName: process.env.DB_NAME || "" });
 
 export type RegisterAccount = { success: boolean; error?: string; }
 export const registerAccountMachine = setup({
@@ -32,16 +30,16 @@ export const registerAccountMachine = setup({
             }
 
             // Check if ID is registered in App
-            const appKey = generateKey([input.id, input.appId].join("%"));
-            const isRegisteredInApp = await db.collection("auth").findOne({ id: appKey });
+            const appRefId = generateKey([input.id, input.appId].join("%"));
+            const isRegisteredInApp = await checkCircleAccount({ refId: appRefId });
 
             // Check if ID is registered in Simpl3
-            const mainKey = generateKey(input.id);
-            const isRegistered = await db.collection("auth").findOne({ id: mainKey });
+            const refId = generateKey(input.id);
+            const isRegistered = await checkCircleAccount({ refId });
 
             return {
-                isRegisteredInApp: isRegisteredInApp !== null,
-                isRegistered: isRegistered !== null,
+                isRegisteredInApp,
+                isRegistered,
             }
         }),
         registerAccount: fromPromise(async ({ input }: { input: { id?: string; pin?: string } }) => {
@@ -49,18 +47,13 @@ export const registerAccountMachine = setup({
                 throw new Error("ID not set");
             }
 
-            const storeKey = generateKey(input.id);
-            const cipherKey = generateKey([input.id, input.pin].join("$"));
+            const refId = generateKey(input.id);
+            const security = generateKey([input.id, input.pin].join("$"));
 
-            if (storeKey && cipherKey) {
-                const credentials = await generateAccount(cipherKey);
+            if (refId && security) {
+                const walletAddress = await generateCircleAccount({ key: refId, security });
 
-                const doc = await db.collection("auth").insertOne({
-                    id: storeKey,
-                    credentials
-                })
-
-                return doc.insertedId;
+                return walletAddress;
             }
 
             return new Error("Registration failed")
@@ -70,18 +63,17 @@ export const registerAccountMachine = setup({
                 throw new Error("ID not set");
             }
 
-            const storeKey = generateKey([input.id, input.appId].join("%"));
-            const cipherKey = generateKey([input.id, input.pin, input.appId].join("$"));
+            if (!input.appId) {
+                throw new Error("App ID not set");
+            }
 
-            if (storeKey && cipherKey) {
-                const credentials = await generateAccount(cipherKey);
+            const refId = generateKey(input.id);
+            const security = generateKey([input.id, input.pin].join("$"));
 
-                const doc = await db.collection("auth").insertOne({
-                    id: storeKey,
-                    credentials
-                })
+            if (refId && security) {
+                const walletAddress = await generateCircleAccount({ key: refId, appId: input.appId, security });
 
-                return doc.insertedId;
+                return walletAddress;
             }
 
             return new Error("Registration failed")

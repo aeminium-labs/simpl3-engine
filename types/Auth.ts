@@ -8,7 +8,8 @@ import bs58 from "bs58";
 import { createDBConnection } from "@/utils/db";
 import { createActor, toPromise } from "xstate";
 import { RegisterAccount, registerAccountMachine } from "@/machines/registerAccount.machine";
-import { Credentials, decryptData, generateKey } from "@/utils/crypto";
+import { checkCircleAccount, decryptData, generateKey, getCircleAccount } from "@/utils/crypto";
+import { Wallet } from "@circle-fin/developer-controlled-wallets/dist/types/clients/developer-controlled-wallets";
 
 const RegistrationResponseType = objectType<RegisterAccount>({
     name: "RegistrationResponse",
@@ -92,10 +93,10 @@ addMutationFields((t) => ({
     }),
 }));
 
-const LoginType = objectType<Credentials>({
+const LoginType = objectType<Wallet>({
     name: "Login",
     fields: (t) => ({
-        pubKey: t.exposeString("pubKey"),
+        pubKey: t.exposeString("address"),
     }),
 });
 
@@ -115,20 +116,16 @@ addQueryFields((t) => ({
             appId: t.arg.string({ required: false }),
         },
         resolve: async (_, args) => {
-            const { db } = await createDBConnection({ mongoURI: process.env.DB_URI || "", dbName: process.env.DB_NAME || "" })
-
             // Check if ID is registered in App
-            const appKey = generateKey([args.id, args.appId].join("%"));
-            const isRegisteredInApp = await db.collection("auth").findOne({ id: appKey });
+            const refId = generateKey(args.id);
+            const isRegisteredInApp = await checkCircleAccount({ refId, appId: args.appId });
 
             // Check if ID is registered in Simpl3
-            const mainKey = generateKey(args.id);
-            const isRegistered = await db.collection("auth").findOne({ id: mainKey });
-
+            const isRegistered = await checkCircleAccount({ refId });
 
             return {
-                isRegisteredInApp: isRegisteredInApp !== null,
-                isRegistered: isRegistered !== null,
+                isRegisteredInApp,
+                isRegistered,
             }
         },
     }),
@@ -140,22 +137,15 @@ addQueryFields((t) => ({
             appId: t.arg.string({ required: false }),
         },
         resolve: async (_, args) => {
-            const { db } = await createDBConnection({ mongoURI: process.env.DB_URI || "", dbName: process.env.DB_NAME || "" })
+            const refId = generateKey(args.id);
+            const security = generateKey([args.id, args.pin].join("$"));
 
-            // Get data from DB
-            const entry = args.appId ? [args.id, args.appId].join("%") : args.id;
-            const storeKey = generateKey(entry);
-            const data = await db.collection("auth").findOne({ id: storeKey });
+            const wallet = await getCircleAccount({ refId, appId: args.appId, security });
 
-            if (data && storeKey) {
-                const cipher = args.appId ? [args.id, args.pin, args.appId].join("$") : [args.id, args.pin].join("$")
-                const cipherKey = generateKey(cipher);
-
-                try {
-                    return decryptData(data.credentials, cipherKey);
-                } catch (e) {
-                    return null;
-                }
+            try {
+                return wallet;
+            } catch (e) {
+                return null;
             }
         },
     }),
